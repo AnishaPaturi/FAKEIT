@@ -12,6 +12,20 @@
         pre { background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; white-space: pre; }
         .experiment { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
         .section { margin-bottom: 40px; }
+        .pre-wrapper { position: relative; }
+        .copy-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .copy-btn:hover { background-color: #0056b3; }
     </style>
 </head>
 <body>
@@ -689,5 +703,29 @@ public class Exp5_DatabaseCheckpoint {
             </div>
         </div>
     </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('pre').forEach(function(pre) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'pre-wrapper';
+
+                const btn = document.createElement('button');
+                btn.className = 'copy-btn';
+                btn.textContent = 'Copy';
+                btn.addEventListener('click', function() {
+                    navigator.clipboard.writeText(pre.textContent).then(function() {
+                        btn.textContent = 'Copied!';
+                        setTimeout(function() {
+                            btn.textContent = 'Copy';
+                        }, 2000);
+                    });
+                });
+
+                pre.parentNode.insertBefore(wrapper, pre);
+                wrapper.appendChild(pre);
+                wrapper.appendChild(btn);
+            });
+        });
+    </script>
 </body>
 </html>
