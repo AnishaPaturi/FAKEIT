@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Something</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 30px; }
+        h3 { color: #666; margin-top: 20px; }
+        pre { background-color: #f5f5f5; padding: 15px; border-radius: 5px; overflow-x: auto; white-space: pre; }
+        .experiment { margin-bottom: 30px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .section { margin-bottom: 40px; }
+    </style>
+</head>
+<body>
+    <h1>SDC</h1>
+    
+    <div class="section">
+        <h2>Experiment 1:</h2>
+        <div class="experiment">
+            <h3>App.js :</h3>
+            <pre>import React, { useState } from "react";
+
+function App() {
+
+const [count, setCount] = useState(0);
+
+return (
+    &lt;div&gt;
+    &lt;h1&gt;JSX and Virtual DOM Demo&lt;/h1&gt;
+
+    &lt;p&gt;Count: {count}&lt;/p&gt;
+
+    &lt;button onClick={() =&gt; setCount(count + 1)}&gt;
+        Increment
+    &lt;/button&gt;
+
+    &lt;/div&gt;
+);
+}
+export default App;</pre>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Experiment 2:</h2>
+        <div class="experiment">
+            <h3>App.js :</h3>
+            <pre>import React from "react";
+import ProductCard from "./ProductCard";
+
+function App() {
+const products = [
+    { id: 1, name: "Laptop", price: 50000, category: "Electronics" },
+    { id: 2, name: "Mobile", price: 20000, category: "Electronics" },
+    { id: 3, name: "Shoes", price: 1500, category: "Fashion" }
+];
+
+return (
+    &lt;div&gt;
+    &lt;h1&gt;Product Listing&lt;/h1&gt;
+
+    {products.map((product) =&gt; (
+        &lt;ProductCard
+        key={product.id}
+        name={product.name}
+        price={product.price}
+        category={product.category}
+        /&gt;
+    ))}
+    &lt;/div&gt;
+);
+}
+export default App;</pre>
+
+            <h3>ProductCard.js :</h3>
+            <pre>import React from "react";
+
+function ProductCard({ name, price, category }) {
+return (
+    &lt;div&gt;
+    &lt;h2&gt;{name}&lt;/h2&gt;
+    &lt;p&gt;Price: {price}&lt;/p&gt;
+    &lt;p&gt;Category: {category}&lt;/p&gt;
+    &lt;/div&gt;
+);
+}
+export default ProductCard;</pre>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Experiment 3:</h2>
+        <div class="experiment">
+            <h3>App.js :</h3>
+            <pre>import React, {
+useState,
+useEffect,
+useMemo,
+useRef,
+useContext,
+createContext,
+} from "react";
+
+const ThemeContext = createContext();
+
+function ThemeButton() {
+const { theme, setTheme } = useContext(ThemeContext);
+
+return (
+    &lt;button onClick={() =&gt; setTheme(theme === "light" ? "dark" : "light")}&gt;
+    Toggle Theme
+    &lt;/button&gt;
+);
+}
+
+function App() {
+const [products, setProducts] = useState([
+    { name: "Pen", qty: 10, price: 20 },
+    { name: "Book", qty: 5, price: 100 },
+]);
+
+const [search, setSearch] = useState("");
+const [theme, setTheme] = useState("light");
+
+const nameRef = useRef();
+const qtyRef = useRef();
+const priceRef = useRef();
+
+useEffect(() =&gt; {
+    document.body.style.backgroundColor =
+    theme === "light" ? "white" : "#222";
+
+    document.body.style.color =
+    theme === "light" ? "black" : "white";
+}, [theme]);
+
+const totalValue = useMemo(() =&gt; {
+    return products.reduce(
+    (sum, item) =&gt; sum + item.qty * item.price,
+    0
+    );
+}, [products]);
+
+const filteredProducts = products.filter((p) =&gt;
+    p.name.toLowerCase().includes(search.toLowerCase())
+);
+
+const addProduct = () =&gt; {
+    const name = nameRef.current.value;
+    const qty = parseInt(qtyRef.current.value);
+    const price = parseInt(priceRef.current.value);
+
+    if (!name || !qty || !price) return;
+
+    setProducts([
+    ...products,
+    {
+        name,
+        qty,
+        price,
+    },
+    ]);
+
+    nameRef.current.value = "";
+    qtyRef.current.value = "";
+    priceRef.current.value = "";
+};
+
+return (
+    &lt;ThemeContext.Provider value={{ theme, setTheme }}&gt;
+    &lt;div style={{ padding: "20px" }}&gt;
+        &lt;h2&gt;Inventory Management&lt;/h2&gt;
+
+        &lt;ThemeButton /&gt;
+
+        &lt;br /&gt;
+        &lt;br /&gt;
+
+        &lt;input
+        type="text"
+        placeholder="Search Product"
+        value={search}
+        onChange={(e) =&gt; setSearch(e.target.value)}
+        /&gt;
+
+        &lt;br /&gt;
+        &lt;br /&gt;
+
+        &lt;input
+        ref={nameRef}
+        placeholder="Product Name"
+        /&gt;
+
+        &lt;input
+        ref={qtyRef}
+        type="number"
+        placeholder="Quantity"
+        /&gt;
+
+        &lt;input
+        ref={priceRef}
+        type="number"
+        placeholder="Price"
+        /&gt;
+
+        &lt;button onClick={addProduct}&gt;
+        Add Product
+        &lt;/button&gt;
+
+        &lt;hr /&gt;
+
+        &lt;h3&gt;Products&lt;/h3&gt;
+
+        &lt;ul&gt;
+        {filteredProducts.map((item, index) =&gt; (
+            &lt;li key={index}&gt;
+            {item.name} - Qty: {item.qty} - ₹{item.price}
+            &lt;/li&gt;
+        ))}
+        &lt;/ul&gt;
+
+        &lt;h3&gt;Total Inventory Value : ₹{totalValue}&lt;/h3&gt;
+    &lt;/div&gt;
+    &lt;/ThemeContext.Provider&gt;
+);
+}
+export default App;</pre>
+        </div>
+    </div>
+
+    <div class="section">
+        <h1>STM</h1>
+        
+        <div class="section">
+            <h2>EXP-1: Selenium IDE Record &amp; Playback (Short Notes)</h2>
+            <div class="experiment">
+                <p><strong>Step 1:</strong> Open Chrome and launch Selenium IDE.</p>
+                <p><strong>Step 2:</strong> Create a New Project and add a Test Case.</p>
+                <p><strong>Step 3:</strong> Click Record and enter:</p>
+                <p>https://www.google.com</p>
+                <p><strong>Step 4:</strong> On Google:</p>
+                <p>Click the search box.<br>Type:<br>selenium<br>Press Enter.</p>
+                <p><strong>Step 5:</strong> Click the Selenium official website (selenium.dev) from the search results.</p>
+                <p><strong>Step 6:</strong> After the Selenium website opens, go back to Selenium IDE and click Stop Recording.</p>
+                <p><strong>Step 7:</strong> Observe the recorded commands:</p>
+                <p>open<br>click<br>type<br>sendKeys<br>click</p>
+                <p><strong>Step 8:</strong> Click Run Current Test (▶).</p>
+                <p><strong>Step 9:</strong> Selenium automatically repeats all actions.</p>
+                <p><strong>Step 10:</strong> Green check marks appear, indicating the test has passed successfully.</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Experiment 2:</h2>
+            <div class="experiment">
+                <pre>package com.test.selenium;
+
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class Exp2_SinglePropertyCheckpoint {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // Launch Chrome browser
+        WebDriver driver = new ChromeDriver();
+
+        // Open Google
+        driver.get("https://www.google.com");
+
+        // Expected title
+        String expectedTitle = "Google";
+
+        // Actual title
+        String actualTitle = driver.getTitle();
+
+        System.out.println("Actual Title   : " + actualTitle);
+        System.out.println("Expected Title : " + expectedTitle);
+
+        if (actualTitle.equals(expectedTitle)) {
+            System.out.println("PASS : Title is correct");
+        } else {
+            System.out.println("FAIL : Title is incorrect");
+        }
+
+        Thread.sleep(2000);
+
+        // Close browser
+        driver.quit();
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Experiment 3:</h2>
+            <div class="experiment">
+                <pre>package com.test.selenium;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class Exp3_SingleObjectCheckpoint {
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // Launch Chrome
+        WebDriver driver = new ChromeDriver();
+
+        // Open Google
+        driver.get("https://www.google.com");
+
+        // Find the search box
+        WebElement searchBox = driver.findElement(By.name("q"));
+
+        // Check whether it is visible
+        System.out.println("Displayed : " + searchBox.isDisplayed());
+
+        // Check whether it is enabled
+        System.out.println("Enabled   : " + searchBox.isEnabled());
+
+        // Print PASS or FAIL
+        if(searchBox.isDisplayed() && searchBox.isEnabled()) {
+            System.out.println("PASS : Search box is ready");
+        }
+        else {
+            System.out.println("FAIL : Search box is not ready");
+        }
+
+        Thread.sleep(2000);
+
+        driver.quit();
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Experiment 4A:</h2>
+            <div class="experiment">
+                <pre>package com.test.selenium;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.io.FileHandler;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+
+public class Exp4A_BitmapCheckpoint {
+
+    public static void main(String[] args) throws Exception {
+
+        // Launch Chrome
+        WebDriver driver = new ChromeDriver();
+
+        try {
+
+            // Open Google
+            driver.get("https://www.google.com");
+
+            // Locate Search Box
+            WebElement searchBox = driver.findElement(By.name("q"));
+
+            // Create Screenshots Folder
+            File folder = new File("Screenshots");
+
+            if (!folder.exists()) {
+                folder.mkdir();
+            }
+
+            // Capture Screenshot
+            File currentImage =
+                    searchBox.getScreenshotAs(OutputType.FILE);
+
+            // Save Screenshot
+            File currentFile =
+                    new File("Screenshots/current_searchbox.png");
+
+            FileHandler.copy(currentImage, currentFile);
+
+            System.out.println("Current screenshot saved:");
+            System.out.println(currentFile.getAbsolutePath());
+
+            // Baseline Image
+            File baselineFile =
+                    new File("Screenshots/baseline_searchbox.png");
+
+            if (!baselineFile.exists()) {
+
+                System.out.println("Baseline image not found.");
+                System.out.println("Rename current_searchbox.png as baseline_searchbox.png");
+
+            } else {
+
+                boolean result =
+                        compareImages(baselineFile, currentFile);
+
+                if (result) {
+
+                    System.out.println("BITMAP CHECKPOINT : TEST PASS");
+                    System.out.println("Images are identical.");
+
+                } else {
+
+                    System.out.println("BITMAP CHECKPOINT : TEST FAIL");
+                    System.out.println("Images are different.");
+                }
+            }
+
+        } finally {
+
+            driver.quit();
+        }
+    }
+
+    public static boolean compareImages(File img1, File img2)
+            throws Exception {
+
+        BufferedImage image1 = ImageIO.read(img1);
+        BufferedImage image2 = ImageIO.read(img2);
+
+        if (image1.getWidth() != image2.getWidth()
+                || image1.getHeight() != image2.getHeight()) {
+
+            return false;
+        }
+
+        for (int x = 0; x &lt; image1.getWidth(); x++) {
+
+            for (int y = 0; y &lt; image1.getHeight(); y++) {
+
+                if (image1.getRGB(x, y)
+                        != image2.getRGB(x, y)) {
+
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Experiment 4B:</h2>
+            <div class="experiment">
+                <pre>package com.test.selenium;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import javax.imageio.ImageIO;
+
+import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class Exp4B_BitmapCheckpoint {
+
+    public static void main(String[] args) throws Exception {
+
+        WebDriver driver = new ChromeDriver();
+
+        try {
+
+            // Maximize browser
+            driver.manage().window().maximize();
+
+            // Open Google
+            driver.get("https://www.google.com");
+
+            // Wait for page to load
+            Thread.sleep(3000);
+
+            // Capture full screenshot
+            File screenshot =
+                    ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+
+            BufferedImage fullImage = ImageIO.read(screenshot);
+
+            // Create folder
+            File folder = new File("C:\\SeleniumScreenshots");
+
+            if (!folder.exists()) {
+                folder.mkdirs();
+            }
+
+            // Crop 800 × 600 area
+            int width = Math.min(800, fullImage.getWidth());
+            int height = Math.min(600, fullImage.getHeight());
+
+            BufferedImage currentArea =
+                    fullImage.getSubimage(0, 0, width, height);
+
+            File currentFile =
+                    new File("C:\\SeleniumScreenshots\\current_google_area.png");
+
+            ImageIO.write(currentArea, "png", currentFile);
+
+            System.out.println("Current screenshot saved:");
+            System.out.println(currentFile.getAbsolutePath());
+
+            File baselineFile =
+                    new File("C:\\SeleniumScreenshots\\baseline_google_area.png");
+
+            if (!baselineFile.exists()) {
+
+                System.out.println("Baseline image not found.");
+                System.out.println("Rename current_google_area.png to baseline_google_area.png");
+
+            } else {
+
+                BufferedImage baseline = ImageIO.read(baselineFile);
+
+                double similarity =
+                        compareImages(baseline, currentArea);
+
+                System.out.println("Image Similarity : " + similarity + "%");
+
+                if (similarity &gt;= 95) {
+
+                    System.out.println("BITMAP CHECKPOINT : TEST PASS");
+
+                } else {
+
+                    System.out.println("BITMAP CHECKPOINT : TEST FAIL");
+                }
+            }
+
+        } finally {
+
+            driver.quit();
+        }
+    }
+
+    public static double compareImages(
+            BufferedImage img1,
+            BufferedImage img2) {
+
+        if (img1.getWidth() != img2.getWidth()
+                || img1.getHeight() != img2.getHeight()) {
+
+            return 0;
+        }
+
+        long totalPixels = img1.getWidth() * img1.getHeight();
+        long samePixels = 0;
+
+        for (int x = 0; x &lt; img1.getWidth(); x++) {
+
+            for (int y = 0; y &lt; img1.getHeight(); y++) {
+
+                if (img1.getRGB(x, y) == img2.getRGB(x, y)) {
+
+                    samePixels++;
+                }
+            }
+        }
+
+        return ((double) samePixels / totalPixels) * 100;
+    }
+}</pre>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Experiment 5:</h2>
+            <div class="experiment">
+                <pre>package com.test.selenium;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
+public class Exp5_DatabaseCheckpoint {
+
+    public static void main(String[] args) {
+
+        try {
+
+            // Connect to H2 Database
+            Connection con =
+                    DriverManager.getConnection(
+                            "jdbc:h2:./StudentDB",
+                            "sa",
+                            "");
+
+            // Create Statement
+            Statement stmt = con.createStatement();
+
+            // Create Table
+            stmt.execute(
+                    "CREATE TABLE IF NOT EXISTS STUDENT (" +
+                            "ID INT PRIMARY KEY," +
+                            "NAME VARCHAR(50)," +
+                            "EMAIL VARCHAR(100))");
+
+            // Delete Existing Records
+            stmt.execute("DELETE FROM STUDENT");
+
+            // Insert Record
+            stmt.executeUpdate(
+                    "INSERT INTO STUDENT VALUES " +
+                            "(1,'Ajay','ajay@gmail.com')");
+
+            // Search Record
+            ResultSet rs =
+                    stmt.executeQuery(
+                            "SELECT * FROM STUDENT WHERE ID=1");
+
+            if (rs.next()) {
+
+                System.out.println("Record Exists");
+
+                System.out.println("ID    : "
+                        + rs.getInt("ID"));
+
+                System.out.println("Name  : "
+                        + rs.getString("NAME"));
+
+                System.out.println("Email : "
+                        + rs.getString("EMAIL"));
+
+                System.out.println("TEST PASSED");
+
+            } else {
+
+                System.out.println("Record Not Found");
+
+                System.out.println("TEST FAILED");
+            }
+
+            con.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+    }
+}</pre>
+            </div>
+        </div>
+        <div class="section">
+            <h2>pom.xml:</h2>
+            <div class="experiment">
+                <pre>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
+  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
+
+  &lt;groupId&gt;com.test&lt;/groupId&gt;
+  &lt;artifactId&gt;Experiment5&lt;/artifactId&gt;
+  &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
+  &lt;packaging&gt;jar&lt;/packaging&gt;
+
+  &lt;name&gt;Experiment5&lt;/name&gt;
+  &lt;url&gt;http://maven.apache.org&lt;/url&gt;
+
+  &lt;properties&gt;
+    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
+  &lt;/properties&gt;
+
+  &lt;dependencies&gt;
+    &lt;dependency&gt;
+      &lt;groupId&gt;junit&lt;/groupId&gt;
+      &lt;artifactId&gt;junit&lt;/artifactId&gt;
+      &lt;version&gt;3.8.1&lt;/version&gt;
+      &lt;scope&gt;test&lt;/scope&gt;
+    &lt;/dependency&gt;
+    &lt;dependency&gt;
+	    &lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
+	    &lt;artifactId&gt;selenium-java&lt;/artifactId&gt;
+	    &lt;version&gt;4.34.0&lt;/version&gt;
+	&lt;/dependency&gt;
+	&lt;dependency&gt;
+	    &lt;groupId&gt;com.h2database&lt;/groupId&gt;
+	    &lt;artifactId&gt;h2&lt;/artifactId&gt;
+	    &lt;version&gt;2.4.240&lt;/version&gt;
+	&lt;/dependency&gt;
+  &lt;/dependencies&gt;
+&lt;/project&gt;</pre>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
