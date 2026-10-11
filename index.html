@@ -30,682 +30,694 @@
 </head>
 <body>
     <p style="text-align: center; margin-bottom: 20px;">
-        <a href="index.html" download style="color: #007bff; text-decoration: none; font-weight: bold;">Download index.html</a>
+        <a href="lab-2.html" download style="color: #007bff; text-decoration: none; font-weight: bold;">Download lab-2.html</a>
     </p>
+
     <h1>SDC</h1>
-    
+
     <div class="section">
-        <h2>Experiment 1:</h2>
+        <h2>Installation Command:</h2>
         <div class="experiment">
-            <h3>App.js :</h3>
-            <pre>import React, { useState } from "react";
-
-function App() {
-
-const [count, setCount] = useState(0);
-
-return (
-    &lt;div&gt;
-    &lt;h1&gt;JSX and Virtual DOM Demo&lt;/h1&gt;
-
-    &lt;p&gt;Count: {count}&lt;/p&gt;
-
-    &lt;button onClick={() =&gt; setCount(count + 1)}&gt;
-        Increment
-    &lt;/button&gt;
-
-    &lt;/div&gt;
-);
-}
-export default App;</pre>
+            <p><strong>Installation Command :</strong></p>
+            <pre>npm create vite@latest lab-2 -- --template react</pre>
+            <p><strong>Project Setup Steps :</strong></p>
+            <pre>cd lab-2
+npm install
+npm install react-router-dom
+npm run dev</pre>
+            <p><em>(Then replace the content of <code>src/App.jsx</code> with the desired experiment code below)</em></p>
         </div>
     </div>
 
     <div class="section">
-        <h2>Experiment 2:</h2>
+        <h2>Experiment 4: Simple E-Commerce Application Using React Router</h2>
         <div class="experiment">
-            <h3>App.js :</h3>
-            <pre>import React from "react";
-import ProductCard from "./ProductCard";
+            <p><strong>Aim :</strong> Build a simplified e-commerce application using React Router. The application includes Home, Products, Product Details, Contact, Login, Cart, and 404 pages with dynamic routing, protected routes, and navigation links.</p>
+            <p><strong>Requirements :</strong> <code>npm install react-router-dom</code></p>
+            <p><strong>Step 1 :</strong> In project terminal, install React Router: <code>npm install react-router-dom</code></p>
+            <p><strong>Step 2 :</strong> Open <code>src/App.jsx</code> and replace with the code below:</p>
+            <h3>src/App.jsx :</h3>
+            <pre>// Program 4: Simplified e-commerce app with React Router (works fully offline)
+// Needs: npm install react-router-dom   (one-time; afterwards no internet needed)
+// Usage: save as src/App.jsx in a Vite/CRA project.
+import React, { createContext, useContext, useState } from &quot;react&quot;;
+import {
+  BrowserRouter, Routes, Route, Link, NavLink,
+  Navigate, useParams, useNavigate, useLocation,
+} from &quot;react-router-dom&quot;;
 
-function App() {
-const products = [
-    { id: 1, name: "Laptop", price: 50000, category: "Electronics" },
-    { id: 2, name: "Mobile", price: 20000, category: "Electronics" },
-    { id: 3, name: "Shoes", price: 1500, category: "Fashion" }
+// ---------- Local data (no API) ----------
+const PRODUCTS = [
+  { id: 1, name: &quot;Laptop&quot;, price: 55000, desc: &quot;14-inch, 16GB RAM, 512GB SSD&quot; },
+  { id: 2, name: &quot;Headphones&quot;, price: 2500, desc: &quot;Wireless, noise cancelling&quot; },
+  { id: 3, name: &quot;Smart Watch&quot;, price: 4000, desc: &quot;Heart-rate and sleep tracking&quot; },
+  { id: 4, name: &quot;Backpack&quot;, price: 1200, desc: &quot;Water-resistant, 25L&quot; },
 ];
 
-return (
-    &lt;div&gt;
-    &lt;h1&gt;Product Listing&lt;/h1&gt;
+// ---------- Global state (auth + cart) ----------
+const AppContext = createContext();
+const useApp = () =&gt; useContext(AppContext);
 
-    {products.map((product) =&gt; (
-        &lt;ProductCard
-        key={product.id}
-        name={product.name}
-        price={product.price}
-        category={product.category}
-        /&gt;
+function AppProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [cart, setCart] = useState([]);
+
+  const addToCart = (product) =&gt; setCart((c) =&gt; [...c, product]);
+  const removeFromCart = (index) =&gt; setCart((c) =&gt; c.filter((_, i) =&gt; i !== index));
+
+  return (
+    &lt;AppContext.Provider value={{ user, setUser, cart, addToCart, removeFromCart }}&gt;
+      {children}
+    &lt;/AppContext.Provider&gt;
+  );
+}
+
+// ---------- Protected route ----------
+function ProtectedRoute({ children }) {
+  const { user } = useApp();
+  const location = useLocation();
+  if (!user) return &lt;Navigate to=&quot;/login&quot; state={{ from: location.pathname }} replace /&gt;;
+  return children;
+}
+
+// ---------- Navigation ----------
+function Navbar() {
+  const { user, setUser, cart } = useApp();
+  const navigate = useNavigate();
+  const style = ({ isActive }) =&gt; ({
+    marginRight: 15, textDecoration: &quot;none&quot;,
+    fontWeight: isActive ? &quot;bold&quot; : &quot;normal&quot;, color: isActive ? &quot;#c0392b&quot; : &quot;#333&quot;,
+  });
+
+  return (
+    &lt;nav style={{ padding: 12, background: &quot;#eee&quot;, display: &quot;flex&quot;, alignItems: &quot;center&quot; }}&gt;
+      &lt;NavLink to=&quot;/&quot; style={style}&gt;Home&lt;/NavLink&gt;
+      &lt;NavLink to=&quot;/products&quot; style={style}&gt;Products&lt;/NavLink&gt;
+      &lt;NavLink to=&quot;/contact&quot; style={style}&gt;Contact&lt;/NavLink&gt;
+      &lt;NavLink to=&quot;/cart&quot; style={style}&gt;Cart ({cart.length})&lt;/NavLink&gt;
+      &lt;span style={{ marginLeft: &quot;auto&quot; }}&gt;
+        {user ? (
+          &lt;&gt;
+            Hi, {user}{&quot; &quot;}
+            &lt;button onClick={() =&gt; { setUser(null); navigate(&quot;/&quot;); }}&gt;Logout&lt;/button&gt;
+          &lt;/&gt;
+        ) : (
+          &lt;NavLink to=&quot;/login&quot; style={style}&gt;Login&lt;/NavLink&gt;
+        )}
+      &lt;/span&gt;
+    &lt;/nav&gt;
+  );
+}
+
+// ---------- Pages ----------
+const Home = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Welcome to MyShop&lt;/h2&gt;
+    &lt;p&gt;Browse our products and add your favourites to the cart.&lt;/p&gt;
+    &lt;Link to=&quot;/products&quot;&gt;Shop now&lt;/Link&gt;
+  &lt;/div&gt;
+);
+
+const Products = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Products&lt;/h2&gt;
+    {PRODUCTS.map((p) =&gt; (
+      &lt;div key={p.id} style={{ border: &quot;1px solid #ccc&quot;, padding: 10, margin: &quot;10px 0&quot; }}&gt;
+        &lt;h3&gt;{p.name}&lt;/h3&gt;
+        &lt;p&gt;₹{p.price}&lt;/p&gt;
+        &lt;Link to={`/products/${p.id}`}&gt;View details&lt;/Link&gt;
+      &lt;/div&gt;
     ))}
-    &lt;/div&gt;
+  &lt;/div&gt;
 );
-}
-export default App;</pre>
 
-            <h3>ProductCard.js :</h3>
-            <pre>import React from "react";
+function ProductDetails() {
+  const { id } = useParams(); // dynamic routing
+  const { addToCart } = useApp();
+  const product = PRODUCTS.find((p) =&gt; p.id === Number(id));
 
-function ProductCard({ name, price, category }) {
-return (
+  if (!product) return &lt;h2&gt;Product not found&lt;/h2&gt;;
+  return (
     &lt;div&gt;
-    &lt;h2&gt;{name}&lt;/h2&gt;
-    &lt;p&gt;Price: {price}&lt;/p&gt;
-    &lt;p&gt;Category: {category}&lt;/p&gt;
+      &lt;h2&gt;{product.name}&lt;/h2&gt;
+      &lt;p&gt;{product.desc}&lt;/p&gt;
+      &lt;p&gt;&lt;b&gt;₹{product.price}&lt;/b&gt;&lt;/p&gt;
+      &lt;button onClick={() =&gt; addToCart(product)}&gt;Add to cart&lt;/button&gt;{&quot; &quot;}
+      &lt;Link to=&quot;/products&quot;&gt;Back&lt;/Link&gt;
     &lt;/div&gt;
-);
+  );
 }
-export default ProductCard;</pre>
+
+function Contact() {
+  const [sent, setSent] = useState(false);
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Contact Us&lt;/h2&gt;
+      {sent ? (
+        &lt;p&gt;Thanks! We will get back to you.&lt;/p&gt;
+      ) : (
+        &lt;&gt;
+          &lt;input placeholder=&quot;Your email&quot; /&gt;&lt;br /&gt;&lt;br /&gt;
+          &lt;textarea placeholder=&quot;Message&quot; /&gt;&lt;br /&gt;&lt;br /&gt;
+          &lt;button onClick={() =&gt; setSent(true)}&gt;Send&lt;/button&gt;
+        &lt;/&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+function Login() {
+  const { setUser } = useApp();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [name, setName] = useState(&quot;&quot;);
+  const [pass, setPass] = useState(&quot;&quot;);
+  const [error, setError] = useState(&quot;&quot;);
+
+  const handleLogin = () =&gt; {
+    // Demo credentials: any name with password &quot;1234&quot;
+    if (name &amp;&amp; pass === &quot;1234&quot;) {
+      setUser(name);
+      navigate(location.state?.from || &quot;/&quot;, { replace: true });
+    } else {
+      setError(&quot;Enter a username and the password 1234&quot;);
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Login&lt;/h2&gt;
+      &lt;input placeholder=&quot;Username&quot; value={name} onChange={(e) =&gt; setName(e.target.value)} /&gt;&lt;br /&gt;&lt;br /&gt;
+      &lt;input type=&quot;password&quot; placeholder=&quot;Password (1234)&quot; value={pass}
+             onChange={(e) =&gt; setPass(e.target.value)} /&gt;&lt;br /&gt;&lt;br /&gt;
+      &lt;button onClick={handleLogin}&gt;Login&lt;/button&gt;
+      {error &amp;&amp; &lt;p style={{ color: &quot;red&quot; }}&gt;{error}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+
+function Cart() {
+  const { cart, removeFromCart } = useApp();
+  const total = cart.reduce((sum, p) =&gt; sum + p.price, 0);
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Your Cart&lt;/h2&gt;
+      {cart.length === 0 ? &lt;p&gt;Cart is empty.&lt;/p&gt; : (
+        &lt;&gt;
+          {cart.map((p, i) =&gt; (
+            &lt;p key={i}&gt;
+              {p.name} - ₹{p.price}{&quot; &quot;}
+              &lt;button onClick={() =&gt; removeFromCart(i)}&gt;Remove&lt;/button&gt;
+            &lt;/p&gt;
+          ))}
+          &lt;h3&gt;Total: ₹{total}&lt;/h3&gt;
+        &lt;/&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+const NotFound = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;404 - Page Not Found&lt;/h2&gt;
+    &lt;Link to=&quot;/&quot;&gt;Go back home&lt;/Link&gt;
+  &lt;/div&gt;
+);
+
+// ---------- App ----------
+export default function App() {
+  return (
+    &lt;AppProvider&gt;
+      &lt;BrowserRouter&gt;
+        &lt;Navbar /&gt;
+        &lt;div style={{ padding: 20 }}&gt;
+          &lt;Routes&gt;
+            &lt;Route path=&quot;/&quot; element={&lt;Home /&gt;} /&gt;
+            &lt;Route path=&quot;/products&quot; element={&lt;Products /&gt;} /&gt;
+            &lt;Route path=&quot;/products/:id&quot; element={&lt;ProductDetails /&gt;} /&gt;
+            &lt;Route path=&quot;/contact&quot; element={&lt;Contact /&gt;} /&gt;
+            &lt;Route path=&quot;/login&quot; element={&lt;Login /&gt;} /&gt;
+            &lt;Route path=&quot;/cart&quot; element={&lt;ProtectedRoute&gt;&lt;Cart /&gt;&lt;/ProtectedRoute&gt;} /&gt;
+            &lt;Route path=&quot;*&quot; element={&lt;NotFound /&gt;} /&gt;
+          &lt;/Routes&gt;
+        &lt;/div&gt;
+      &lt;/BrowserRouter&gt;
+    &lt;/AppProvider&gt;
+  );
+}</pre>
+            <p><strong>Step 3 :</strong> Run the application using <code>npm run dev</code> and verify navigation, cart, protected routes, and 404 page.</p>
         </div>
     </div>
 
     <div class="section">
-        <h2>Experiment 3:</h2>
+        <h2>Experiment 5: Dynamic React Form Using Configuration Object</h2>
         <div class="experiment">
-            <h3>App.js :</h3>
-            <pre>import React, {
-useState,
-useEffect,
-useMemo,
-useRef,
-useContext,
-createContext,
-} from "react";
+            <p><strong>Aim :</strong> Create a React form where input fields are dynamically generated from a JavaScript configuration object. The form manages user input using state and displays submitted data below the form.</p>
+            <p><strong>Requirements :</strong> Built-in React (No extra packages needed)</p>
+            <p><strong>Step 1 :</strong> Open <code>src/App.jsx</code> and replace with the code below:</p>
+            <h3>src/App.jsx :</h3>
+            <pre>// Program 5: Dynamic form generated from a JavaScript configuration object
+// No extra packages needed. Usage: save as src/App.jsx
+import React, { useState } from &quot;react&quot;;
 
-const ThemeContext = createContext();
-
-function ThemeButton() {
-const { theme, setTheme } = useContext(ThemeContext);
-
-return (
-    &lt;button onClick={() =&gt; setTheme(theme === "light" ? "dark" : "light")}&gt;
-    Toggle Theme
-    &lt;/button&gt;
-);
-}
-
-function App() {
-const [products, setProducts] = useState([
-    { name: "Pen", qty: 10, price: 20 },
-    { name: "Book", qty: 5, price: 100 },
-]);
-
-const [search, setSearch] = useState("");
-const [theme, setTheme] = useState("light");
-
-const nameRef = useRef();
-const qtyRef = useRef();
-const priceRef = useRef();
-
-useEffect(() =&gt; {
-    document.body.style.backgroundColor =
-    theme === "light" ? "white" : "#222";
-
-    document.body.style.color =
-    theme === "light" ? "black" : "white";
-}, [theme]);
-
-const totalValue = useMemo(() =&gt; {
-    return products.reduce(
-    (sum, item) =&gt; sum + item.qty * item.price,
-    0
-    );
-}, [products]);
-
-const filteredProducts = products.filter((p) =&gt;
-    p.name.toLowerCase().includes(search.toLowerCase())
-);
-
-const addProduct = () =&gt; {
-    const name = nameRef.current.value;
-    const qty = parseInt(qtyRef.current.value);
-    const price = parseInt(priceRef.current.value);
-
-    if (!name || !qty || !price) return;
-
-    setProducts([
-    ...products,
-    {
-        name,
-        qty,
-        price,
-    },
-    ]);
-
-    nameRef.current.value = "";
-    qtyRef.current.value = "";
-    priceRef.current.value = "";
+// ---------- Configuration object ----------
+const formConfig = {
+  title: &quot;Student Registration&quot;,
+  fields: [
+    { name: &quot;fullName&quot;, label: &quot;Full Name&quot;, type: &quot;text&quot;, placeholder: &quot;Enter name&quot;, required: true },
+    { name: &quot;email&quot;, label: &quot;Email&quot;, type: &quot;email&quot;, placeholder: &quot;Enter email&quot;, required: true },
+    { name: &quot;age&quot;, label: &quot;Age&quot;, type: &quot;number&quot;, placeholder: &quot;Enter age&quot; },
+    { name: &quot;gender&quot;, label: &quot;Gender&quot;, type: &quot;radio&quot;, options: [&quot;Male&quot;, &quot;Female&quot;, &quot;Other&quot;] },
+    { name: &quot;course&quot;, label: &quot;Course&quot;, type: &quot;select&quot;, options: [&quot;BCA&quot;, &quot;B.Tech&quot;, &quot;MCA&quot;, &quot;MBA&quot;] },
+    { name: &quot;skills&quot;, label: &quot;Skills&quot;, type: &quot;checkbox&quot;, options: [&quot;React&quot;, &quot;Java&quot;, &quot;Python&quot;] },
+    { name: &quot;about&quot;, label: &quot;About You&quot;, type: &quot;textarea&quot;, placeholder: &quot;Short description&quot; },
+  ],
 };
 
-return (
-    &lt;ThemeContext.Provider value={{ theme, setTheme }}&gt;
-    &lt;div style={{ padding: "20px" }}&gt;
-        &lt;h2&gt;Inventory Management&lt;/h2&gt;
+// Build initial state from config
+const buildInitialState = (config) =&gt; {
+  const state = {};
+  config.fields.forEach((f) =&gt; {
+    state[f.name] = f.type === &quot;checkbox&quot; ? [] : &quot;&quot;;
+  });
+  return state;
+};
 
-        &lt;ThemeButton /&gt;
+export default function App() {
+  const [formData, setFormData] = useState(buildInitialState(formConfig));
+  const [submitted, setSubmitted] = useState(null);
 
-        &lt;br /&gt;
-        &lt;br /&gt;
+  const handleChange = (e) =&gt; {
+    const { name, value, type, checked } = e.target;
+    if (type === &quot;checkbox&quot;) {
+      setFormData((prev) =&gt; ({
+        ...prev,
+        [name]: checked ? [...prev[name], value] : prev[name].filter((v) =&gt; v !== value),
+      }));
+    } else {
+      setFormData((prev) =&gt; ({ ...prev, [name]: value }));
+    }
+  };
 
-        &lt;input
-        type="text"
-        placeholder="Search Product"
-        value={search}
-        onChange={(e) =&gt; setSearch(e.target.value)}
-        /&gt;
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    setSubmitted(formData);
+  };
 
-        &lt;br /&gt;
-        &lt;br /&gt;
+  // Render one field depending on its type
+  const renderField = (f) =&gt; {
+    switch (f.type) {
+      case &quot;select&quot;:
+        return (
+          &lt;select name={f.name} value={formData[f.name]} onChange={handleChange} required={f.required}&gt;
+            &lt;option value=&quot;&quot;&gt;-- Select --&lt;/option&gt;
+            {f.options.map((o) =&gt; &lt;option key={o} value={o}&gt;{o}&lt;/option&gt;)}
+          &lt;/select&gt;
+        );
+      case &quot;radio&quot;:
+        return f.options.map((o) =&gt; (
+          &lt;label key={o} style={{ marginRight: 12 }}&gt;
+            &lt;input type=&quot;radio&quot; name={f.name} value={o}
+                   checked={formData[f.name] === o} onChange={handleChange} /&gt; {o}
+          &lt;/label&gt;
+        ));
+      case &quot;checkbox&quot;:
+        return f.options.map((o) =&gt; (
+          &lt;label key={o} style={{ marginRight: 12 }}&gt;
+            &lt;input type=&quot;checkbox&quot; name={f.name} value={o}
+                   checked={formData[f.name].includes(o)} onChange={handleChange} /&gt; {o}
+          &lt;/label&gt;
+        ));
+      case &quot;textarea&quot;:
+        return &lt;textarea name={f.name} placeholder={f.placeholder}
+                         value={formData[f.name]} onChange={handleChange} /&gt;;
+      default:
+        return &lt;input type={f.type} name={f.name} placeholder={f.placeholder}
+                      value={formData[f.name]} onChange={handleChange} required={f.required} /&gt;;
+    }
+  };
 
-        &lt;input
-        ref={nameRef}
-        placeholder="Product Name"
-        /&gt;
-
-        &lt;input
-        ref={qtyRef}
-        type="number"
-        placeholder="Quantity"
-        /&gt;
-
-        &lt;input
-        ref={priceRef}
-        type="number"
-        placeholder="Price"
-        /&gt;
-
-        &lt;button onClick={addProduct}&gt;
-        Add Product
-        &lt;/button&gt;
-
-        &lt;hr /&gt;
-
-        &lt;h3&gt;Products&lt;/h3&gt;
-
-        &lt;ul&gt;
-        {filteredProducts.map((item, index) =&gt; (
-            &lt;li key={index}&gt;
-            {item.name} - Qty: {item.qty} - ₹{item.price}
-            &lt;/li&gt;
+  return (
+    &lt;div style={{ maxWidth: 480, margin: &quot;30px auto&quot;, fontFamily: &quot;sans-serif&quot; }}&gt;
+      &lt;h2&gt;{formConfig.title}&lt;/h2&gt;
+      &lt;form onSubmit={handleSubmit}&gt;
+        {formConfig.fields.map((f) =&gt; (
+          &lt;div key={f.name} style={{ marginBottom: 14 }}&gt;
+            &lt;label style={{ display: &quot;block&quot;, fontWeight: &quot;bold&quot;, marginBottom: 4 }}&gt;
+              {f.label}{f.required &amp;&amp; &quot; *&quot;}
+            &lt;/label&gt;
+            {renderField(f)}
+          &lt;/div&gt;
         ))}
-        &lt;/ul&gt;
+        &lt;button type=&quot;submit&quot;&gt;Submit&lt;/button&gt;
+      &lt;/form&gt;
 
-        &lt;h3&gt;Total Inventory Value : ₹{totalValue}&lt;/h3&gt;
+      {submitted &amp;&amp; (
+        &lt;div style={{ marginTop: 25, padding: 12, background: &quot;#f3f3f3&quot; }}&gt;
+          &lt;h3&gt;Submitted Data&lt;/h3&gt;
+          {formConfig.fields.map((f) =&gt; (
+            &lt;p key={f.name}&gt;
+              &lt;b&gt;{f.label}:&lt;/b&gt;{&quot; &quot;}
+              {Array.isArray(submitted[f.name]) ? submitted[f.name].join(&quot;, &quot;) : submitted[f.name]}
+            &lt;/p&gt;
+          ))}
+        &lt;/div&gt;
+      )}
     &lt;/div&gt;
-    &lt;/ThemeContext.Provider&gt;
-);
-}
-export default App;</pre>
+  );
+}</pre>
+            <p><strong>Step 2 :</strong> Run the application using <code>npm run dev</code>, fill in the form fields and click Submit to view the submitted data below.</p>
         </div>
     </div>
 
     <div class="section">
-        <h1>STM</h1>
-        
-        <div class="section">
-            <h2>EXP-1: Selenium IDE Record &amp; Playback (Short Notes)</h2>
-            <div class="experiment">
-                <p><strong>Step 1:</strong> Open Chrome and launch Selenium IDE.</p>
-                <p><strong>Step 2:</strong> Create a New Project and add a Test Case.</p>
-                <p><strong>Step 3:</strong> Click Record and enter:</p>
-                <p>https://www.google.com</p>
-                <p><strong>Step 4:</strong> On Google:</p>
-                <p>Click the search box.<br>Type:<br>selenium<br>Press Enter.</p>
-                <p><strong>Step 5:</strong> Click the Selenium official website (selenium.dev) from the search results.</p>
-                <p><strong>Step 6:</strong> After the Selenium website opens, go back to Selenium IDE and click Stop Recording.</p>
-                <p><strong>Step 7:</strong> Observe the recorded commands:</p>
-                <p>open<br>click<br>type<br>sendKeys<br>click</p>
-                <p><strong>Step 8:</strong> Click Run Current Test (▶).</p>
-                <p><strong>Step 9:</strong> Selenium automatically repeats all actions.</p>
-                <p><strong>Step 10:</strong> Green check marks appear, indicating the test has passed successfully.</p>
-            </div>
-        </div>
+        <h2>Experiment 6: React SPA with Routing and API Fetching</h2>
+        <div class="experiment">
+            <p><strong>Aim :</strong> Develop a React single-page application with routing between Home and Users pages. Fetch user data using useEffect and useState, display the data conditionally, and show a loading indicator while data is being fetched.</p>
+            <p><strong>Requirements :</strong> <code>npm install react-router-dom</code></p>
+            <p><strong>Step 1 :</strong> In project terminal, ensure React Router is installed: <code>npm install react-router-dom</code></p>
+            <p><strong>Step 2 :</strong> Open <code>src/App.jsx</code> and replace with the code below:</p>
+            <h3>src/App.jsx :</h3>
+            <pre>// Program 6: SPA with routing (Home, Users), useEffect + useState,
+// conditional rendering and a loading indicator.
+// Offline: the &quot;public API&quot; is replaced by a local function that returns
+// data after a delay (same behaviour as fetch, but no internet).
+// Needs: npm install react-router-dom (one-time). Usage: save as src/App.jsx
+import React, { useState, useEffect } from &quot;react&quot;;
+import { BrowserRouter, Routes, Route, NavLink } from &quot;react-router-dom&quot;;
 
-        <div class="section">
-            <h2>Experiment 2:</h2>
-            <div class="experiment">
-                <pre>package com.test.selenium;
+// ---------- Fake API (replaces https://jsonplaceholder.typicode.com/users) ----------
+const USERS_DATA = [
+  { id: 1, name: &quot;Leanne Graham&quot;, email: &quot;leanne@example.com&quot;, city: &quot;Hyderabad&quot; },
+  { id: 2, name: &quot;Ervin Howell&quot;, email: &quot;ervin@example.com&quot;, city: &quot;Chennai&quot; },
+  { id: 3, name: &quot;Clementine Bauch&quot;, email: &quot;clem@example.com&quot;, city: &quot;Mumbai&quot; },
+  { id: 4, name: &quot;Patricia Lebsack&quot;, email: &quot;patricia@example.com&quot;, city: &quot;Delhi&quot; },
+  { id: 5, name: &quot;Chelsey Dietrich&quot;, email: &quot;chelsey@example.com&quot;, city: &quot;Pune&quot; },
+];
 
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+const fetchUsers = (shouldFail = false) =&gt;
+  new Promise((resolve, reject) =&gt; {
+    setTimeout(() =&gt; {
+      shouldFail ? reject(new Error(&quot;Failed to load users&quot;)) : resolve(USERS_DATA);
+    }, 2000); // simulate 2-second network delay
+  });
 
-public class Exp2_SinglePropertyCheckpoint {
+// ---------- Pages ----------
+const Home = () =&gt; (
+  &lt;div&gt;
+    &lt;h2&gt;Home&lt;/h2&gt;
+    &lt;p&gt;Open the Users page to see data loaded with useEffect.&lt;/p&gt;
+  &lt;/div&gt;
+);
 
-    public static void main(String[] args) throws InterruptedException {
+function Users() {
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-        // Launch Chrome browser
-        WebDriver driver = new ChromeDriver();
+  useEffect(() =&gt; {
+    fetchUsers()
+      .then((data) =&gt; setUsers(data))
+      .catch((err) =&gt; setError(err.message))
+      .finally(() =&gt; setLoading(false));
+  }, []); // runs once when the page mounts
 
-        // Open Google
-        driver.get("https://www.google.com");
+  // Conditional rendering
+  if (loading) return &lt;p&gt;Loading users...&lt;/p&gt;;
+  if (error) return &lt;p style={{ color: &quot;red&quot; }}&gt;{error}&lt;/p&gt;;
 
-        // Expected title
-        String expectedTitle = "Google";
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Users&lt;/h2&gt;
+      &lt;table border=&quot;1&quot; cellPadding=&quot;8&quot; style={{ borderCollapse: &quot;collapse&quot; }}&gt;
+        &lt;thead&gt;
+          &lt;tr&gt;&lt;th&gt;ID&lt;/th&gt;&lt;th&gt;Name&lt;/th&gt;&lt;th&gt;Email&lt;/th&gt;&lt;th&gt;City&lt;/th&gt;&lt;/tr&gt;
+        &lt;/thead&gt;
+        &lt;tbody&gt;
+          {users.map((u) =&gt; (
+            &lt;tr key={u.id}&gt;
+              &lt;td&gt;{u.id}&lt;/td&gt;&lt;td&gt;{u.name}&lt;/td&gt;&lt;td&gt;{u.email}&lt;/td&gt;&lt;td&gt;{u.city}&lt;/td&gt;
+            &lt;/tr&gt;
+          ))}
+        &lt;/tbody&gt;
+      &lt;/table&gt;
+    &lt;/div&gt;
+  );
+}
 
-        // Actual title
-        String actualTitle = driver.getTitle();
-
-        System.out.println("Actual Title   : " + actualTitle);
-        System.out.println("Expected Title : " + expectedTitle);
-
-        if (actualTitle.equals(expectedTitle)) {
-            System.out.println("PASS : Title is correct");
-        } else {
-            System.out.println("FAIL : Title is incorrect");
-        }
-
-        Thread.sleep(2000);
-
-        // Close browser
-        driver.quit();
-    }
+// ---------- App ----------
+export default function App() {
+  const link = ({ isActive }) =&gt; ({
+    marginRight: 15, fontWeight: isActive ? &quot;bold&quot; : &quot;normal&quot;,
+  });
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;nav style={{ padding: 12, background: &quot;#eee&quot; }}&gt;
+        &lt;NavLink to=&quot;/&quot; style={link}&gt;Home&lt;/NavLink&gt;
+        &lt;NavLink to=&quot;/users&quot; style={link}&gt;Users&lt;/NavLink&gt;
+      &lt;/nav&gt;
+      &lt;div style={{ padding: 20 }}&gt;
+        &lt;Routes&gt;
+          &lt;Route path=&quot;/&quot; element={&lt;Home /&gt;} /&gt;
+          &lt;Route path=&quot;/users&quot; element={&lt;Users /&gt;} /&gt;
+        &lt;/Routes&gt;
+      &lt;/div&gt;
+    &lt;/BrowserRouter&gt;
+  );
 }</pre>
-            </div>
+            <p><strong>Step 3 :</strong> Run <code>npm run dev</code>, navigate to "Users" to observe the loading indicator followed by the loaded table.</p>
+            <p><strong>Note :</strong> The code above includes a simulated network delay (2 seconds) that works 100% offline. If you want to fetch directly from jsonplaceholder when internet is available, replace <code>fetchUsers()</code> in <code>useEffect</code> with:</p>
+            <pre>fetch("https://jsonplaceholder.typicode.com/users")
+  .then((res) =&gt; res.json())
+  .then((data) =&gt; setUsers(data))
+  .catch((err) =&gt; setError(err.message))
+  .finally(() =&gt; setLoading(false));</pre>
         </div>
+    </div>
+
+    <h1>STM</h1>
+    <div class="section">
+        <h2>Exp 6 : Custom Check</h2>
+        <div class="experiment">
+            <p><strong>Step 1 :</strong> Open Eclipse</p>
+            <p><strong>Step 2 :</strong> File -&gt; New -&gt; Maven Project -&gt; Next</p>
+            <p><strong>Step 3 :</strong> Group ID : org.apache.maven.archetypes<br>
+            Artifact ID : maven-archetype-quickstart<br>
+            Version : 1.5<br>
+            Next</p>
+            <p><strong>Step 4 :</strong> Artifact Id : Experiment-6<br>
+            Next</p>
+            <p><strong>Step 5 :</strong> y<br>
+            =&gt; Build Success</p>
+            <p><strong>Step 6 :</strong> pom.xml</p>
+            <pre>&lt;dependency&gt;
+&lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
+&lt;artifactId&gt;selenium-java&lt;/artifactId&gt;
+&lt;version&gt;4.34.0&lt;/version&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+&lt;groupId&gt;com.h2database&lt;/groupId&gt;
+&lt;artifactId&gt;h2&lt;/artifactId&gt;
+&lt;version&gt;2.4.240&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+            <p><strong>Step 7 :</strong> Right Click on src/main/java -&gt; New -&gt; Package -&gt; Name : com.test.selenuim</p>
+            <p><strong>Step 8 :</strong> right click on com.test.selenuim -&gt; New -&gt; class -&gt; Exp6_DB_CustomCheck<br>
+            check the box : public static void main(String [] args) -&gt; finish</p>
+            <p><strong>Step 9 :</strong> Paste this code :</p>
+            <pre>package com.test.selenium;
 
-        <div class="section">
-            <h2>Experiment 3:</h2>
-            <div class="experiment">
-                <pre>package com.test.selenium;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-
-public class Exp3_SingleObjectCheckpoint {
-
-    public static void main(String[] args) throws InterruptedException {
-
-        // Launch Chrome
-        WebDriver driver = new ChromeDriver();
-
-        // Open Google
-        driver.get("https://www.google.com");
-
-        // Find the search box
-        WebElement searchBox = driver.findElement(By.name("q"));
-
-        // Check whether it is visible
-        System.out.println("Displayed : " + searchBox.isDisplayed());
-
-        // Check whether it is enabled
-        System.out.println("Enabled   : " + searchBox.isEnabled());
-
-        // Print PASS or FAIL
-        if(searchBox.isDisplayed() && searchBox.isEnabled()) {
-            System.out.println("PASS : Search box is ready");
-        }
-        else {
-            System.out.println("FAIL : Search box is not ready");
-        }
-
-        Thread.sleep(2000);
-
-        driver.quit();
-    }
-}</pre>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Experiment 4A:</h2>
-            <div class="experiment">
-                <pre>package com.test.selenium;
-
-import org.openqa.selenium.By;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.io.FileHandler;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-
-public class Exp4A_BitmapCheckpoint {
-
-    public static void main(String[] args) throws Exception {
-
-        // Launch Chrome
-        WebDriver driver = new ChromeDriver();
-
-        try {
-
-            // Open Google
-            driver.get("https://www.google.com");
-
-            // Locate Search Box
-            WebElement searchBox = driver.findElement(By.name("q"));
-
-            // Create Screenshots Folder
-            File folder = new File("Screenshots");
-
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-
-            // Capture Screenshot
-            File currentImage =
-                    searchBox.getScreenshotAs(OutputType.FILE);
-
-            // Save Screenshot
-            File currentFile =
-                    new File("Screenshots/current_searchbox.png");
-
-            FileHandler.copy(currentImage, currentFile);
-
-            System.out.println("Current screenshot saved:");
-            System.out.println(currentFile.getAbsolutePath());
-
-            // Baseline Image
-            File baselineFile =
-                    new File("Screenshots/baseline_searchbox.png");
-
-            if (!baselineFile.exists()) {
-
-                System.out.println("Baseline image not found.");
-                System.out.println("Rename current_searchbox.png as baseline_searchbox.png");
-
-            } else {
-
-                boolean result =
-                        compareImages(baselineFile, currentFile);
-
-                if (result) {
-
-                    System.out.println("BITMAP CHECKPOINT : TEST PASS");
-                    System.out.println("Images are identical.");
-
-                } else {
-
-                    System.out.println("BITMAP CHECKPOINT : TEST FAIL");
-                    System.out.println("Images are different.");
-                }
-            }
-
-        } finally {
-
-            driver.quit();
-        }
-    }
-
-    public static boolean compareImages(File img1, File img2)
-            throws Exception {
-
-        BufferedImage image1 = ImageIO.read(img1);
-        BufferedImage image2 = ImageIO.read(img2);
-
-        if (image1.getWidth() != image2.getWidth()
-                || image1.getHeight() != image2.getHeight()) {
-
-            return false;
-        }
-
-        for (int x = 0; x &lt; image1.getWidth(); x++) {
-
-            for (int y = 0; y &lt; image1.getHeight(); y++) {
-
-                if (image1.getRGB(x, y)
-                        != image2.getRGB(x, y)) {
-
-                    return false;
-                }
-            }
-        }
-
-        return true;
-    }
-}</pre>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Experiment 4B:</h2>
-            <div class="experiment">
-                <pre>package com.test.selenium;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
-
-import org.openqa.selenium.*;
-import org.openqa.selenium.chrome.ChromeDriver;
-
-public class Exp4B_BitmapCheckpoint {
-
-    public static void main(String[] args) throws Exception {
-
-        WebDriver driver = new ChromeDriver();
-
-        try {
-
-            // Maximize browser
-            driver.manage().window().maximize();
-
-            // Open Google
-            driver.get("https://www.google.com");
-
-            // Wait for page to load
-            Thread.sleep(3000);
-
-            // Capture full screenshot
-            File screenshot =
-                    ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-
-            BufferedImage fullImage = ImageIO.read(screenshot);
-
-            // Create folder
-            File folder = new File("C:\\SeleniumScreenshots");
-
-            if (!folder.exists()) {
-                folder.mkdirs();
-            }
-
-            // Crop 800 × 600 area
-            int width = Math.min(800, fullImage.getWidth());
-            int height = Math.min(600, fullImage.getHeight());
-
-            BufferedImage currentArea =
-                    fullImage.getSubimage(0, 0, width, height);
-
-            File currentFile =
-                    new File("C:\\SeleniumScreenshots\\current_google_area.png");
-
-            ImageIO.write(currentArea, "png", currentFile);
-
-            System.out.println("Current screenshot saved:");
-            System.out.println(currentFile.getAbsolutePath());
-
-            File baselineFile =
-                    new File("C:\\SeleniumScreenshots\\baseline_google_area.png");
-
-            if (!baselineFile.exists()) {
-
-                System.out.println("Baseline image not found.");
-                System.out.println("Rename current_google_area.png to baseline_google_area.png");
-
-            } else {
-
-                BufferedImage baseline = ImageIO.read(baselineFile);
-
-                double similarity =
-                        compareImages(baseline, currentArea);
-
-                System.out.println("Image Similarity : " + similarity + "%");
-
-                if (similarity &gt;= 95) {
-
-                    System.out.println("BITMAP CHECKPOINT : TEST PASS");
-
-                } else {
-
-                    System.out.println("BITMAP CHECKPOINT : TEST FAIL");
-                }
-            }
-
-        } finally {
-
-            driver.quit();
-        }
-    }
-
-    public static double compareImages(
-            BufferedImage img1,
-            BufferedImage img2) {
-
-        if (img1.getWidth() != img2.getWidth()
-                || img1.getHeight() != img2.getHeight()) {
-
-            return 0;
-        }
-
-        long totalPixels = img1.getWidth() * img1.getHeight();
-        long samePixels = 0;
-
-        for (int x = 0; x &lt; img1.getWidth(); x++) {
-
-            for (int y = 0; y &lt; img1.getHeight(); y++) {
-
-                if (img1.getRGB(x, y) == img2.getRGB(x, y)) {
-
-                    samePixels++;
-                }
-            }
-        }
-
-        return ((double) samePixels / totalPixels) * 100;
-    }
-}</pre>
-            </div>
-        </div>
-
-        <div class="section">
-            <h2>Experiment 5:</h2>
-            <div class="experiment">
-                <pre>package com.test.selenium;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-public class Exp5_DatabaseCheckpoint {
-
+public class NewTest {
     public static void main(String[] args) {
 
         try {
 
             // Connect to H2 Database
-            Connection con =
-                    DriverManager.getConnection(
-                            "jdbc:h2:./StudentDB",
-                            "sa",
-                            "");
+            Connection con = DriverManager.getConnection(
+                    "jdbc:h2:./StudentDB", "sa", "");
 
-            // Create Statement
             Statement stmt = con.createStatement();
 
-            // Create Table
-            stmt.execute(
-                    "CREATE TABLE IF NOT EXISTS STUDENT (" +
-                            "ID INT PRIMARY KEY," +
-                            "NAME VARCHAR(50)," +
-                            "EMAIL VARCHAR(100))");
+            // Create table if it does not exist
+            stmt.execute("CREATE TABLE IF NOT EXISTS STUDENT ("
+                    + "ID INT PRIMARY KEY, "
+                    + "NAME VARCHAR(50), "
+                    + "EMAIL VARCHAR(100))");
 
-            // Delete Existing Records
+            // Delete previous records
             stmt.execute("DELETE FROM STUDENT");
 
-            // Insert Record
+            // Insert sample record
             stmt.executeUpdate(
-                    "INSERT INTO STUDENT VALUES " +
-                            "(1,'Ajay','ajay@gmail.com')");
+                    "INSERT INTO STUDENT VALUES "
+                    + "(1,'Ajay','ajay@gmail.com')");
 
-            // Search Record
-            ResultSet rs =
-                    stmt.executeQuery(
-                            "SELECT * FROM STUDENT WHERE ID=1");
+            // Retrieve the record
+            ResultSet rs = stmt.executeQuery(
+                    "SELECT NAME FROM STUDENT WHERE ID = 1");
 
             if (rs.next()) {
 
-                System.out.println("Record Exists");
+                String actualName = rs.getString("NAME");
+                String expectedName = "Ajay";
 
-                System.out.println("ID    : "
-                        + rs.getInt("ID"));
+                // Custom Check
+                if (actualName.equals(expectedName)) {
 
-                System.out.println("Name  : "
-                        + rs.getString("NAME"));
+                    System.out.println("Expected Name : " + expectedName);
+                    System.out.println("Actual Name   : " + actualName);
+                    System.out.println("CUSTOM CHECK PASSED");
 
-                System.out.println("Email : "
-                        + rs.getString("EMAIL"));
+                } else {
 
-                System.out.println("TEST PASSED");
+                    System.out.println("Expected Name : " + expectedName);
+                    System.out.println("Actual Name   : " + actualName);
+                    System.out.println("CUSTOM CHECK FAILED");
+                }
 
             } else {
 
                 System.out.println("Record Not Found");
-
-                System.out.println("TEST FAILED");
             }
 
             con.close();
 
         } catch (Exception e) {
-
             e.printStackTrace();
         }
     }
 }</pre>
-            </div>
-        </div>
-        <div class="section">
-            <h2>pom.xml:</h2>
-            <div class="experiment">
-                <pre>&lt;project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"&gt;
-  &lt;modelVersion&gt;4.0.0&lt;/modelVersion&gt;
-
-  &lt;groupId&gt;com.test&lt;/groupId&gt;
-  &lt;artifactId&gt;Experiment5&lt;/artifactId&gt;
-  &lt;version&gt;0.0.1-SNAPSHOT&lt;/version&gt;
-  &lt;packaging&gt;jar&lt;/packaging&gt;
-
-  &lt;name&gt;Experiment5&lt;/name&gt;
-  &lt;url&gt;http://maven.apache.org&lt;/url&gt;
-
-  &lt;properties&gt;
-    &lt;project.build.sourceEncoding&gt;UTF-8&lt;/project.build.sourceEncoding&gt;
-  &lt;/properties&gt;
-
-  &lt;dependencies&gt;
-    &lt;dependency&gt;
-      &lt;groupId&gt;junit&lt;/groupId&gt;
-      &lt;artifactId&gt;junit&lt;/artifactId&gt;
-      &lt;version&gt;3.8.1&lt;/version&gt;
-      &lt;scope&gt;test&lt;/scope&gt;
-    &lt;/dependency&gt;
-    &lt;dependency&gt;
-	    &lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
-	    &lt;artifactId&gt;selenium-java&lt;/artifactId&gt;
-	    &lt;version&gt;4.34.0&lt;/version&gt;
-	&lt;/dependency&gt;
-	&lt;dependency&gt;
-	    &lt;groupId&gt;com.h2database&lt;/groupId&gt;
-	    &lt;artifactId&gt;h2&lt;/artifactId&gt;
-	    &lt;version&gt;2.4.240&lt;/version&gt;
-	&lt;/dependency&gt;
-  &lt;/dependencies&gt;
-&lt;/project&gt;</pre>
-            </div>
+            <p><strong>Step 10 :</strong> Right Click on file -&gt; Run as -&gt; Java Application</p>
         </div>
     </div>
+
+    <div class="section">
+        <h2>Exp 7(a) : Data Driven Test – Dynamic Test Data Submission</h2>
+        <div class="experiment">
+            <h3>Part 1: Create HTML Form</h3>
+            <p><strong>Step 1 :</strong> Create folder <code>C:\SeleniumFiles</code> if it doesn't already exist.</p>
+            <p><strong>Step 2 :</strong> Open Notepad and save as <code>C:\SeleniumFiles\StudentForm.html</code> (Save as type: All Files):</p>
+            <pre>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Student Registration&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+
+&lt;h2&gt;Student Registration Form&lt;/h2&gt;
+
+&lt;label&gt;Name:&lt;/label&gt;
+&lt;input type="text" id="name"&gt;&lt;br&gt;&lt;br&gt;
+
+&lt;label&gt;Email:&lt;/label&gt;
+&lt;input type="text" id="email"&gt;&lt;br&gt;&lt;br&gt;
+
+&lt;button onclick="submitForm()"&gt;Submit&lt;/button&gt;
+
+&lt;p id="result"&gt;&lt;/p&gt;
+
+&lt;script&gt;
+function submitForm(){
+    var name = document.getElementById("name").value;
+    var email = document.getElementById("email").value;
+
+    document.getElementById("result").innerHTML =
+        "Registration Successful";
+}
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;</pre>
+            <p><strong>Step 3 :</strong> Test manually by opening <code>C:\SeleniumFiles\StudentForm.html</code> in Chrome. Enter Name &amp; Email, click Submit, and ensure "Registration Successful" appears.</p>
+
+            <h3>Part 2: Eclipse Maven Project Setup</h3>
+            <p><strong>Step 4 :</strong> Open Eclipse IDE</p>
+            <p><strong>Step 5 :</strong> File -&gt; New -&gt; Maven Project -&gt; Next</p>
+            <p><strong>Step 6 :</strong> Select Archetype:<br>
+            Group ID : org.apache.maven.archetypes<br>
+            Artifact ID : maven-archetype-quickstart<br>
+            Version : 1.5<br>
+            Next</p>
+            <p><strong>Step 7 :</strong> Artifact ID : <strong>Experiment-7a</strong> -&gt; Finish</p>
+            <p><strong>Step 8 :</strong> Open <code>pom.xml</code> and add the Selenium dependency inside <code>&lt;dependencies&gt;</code> (Note: H2 database is not needed):</p>
+            <pre>&lt;dependency&gt;
+    &lt;groupId&gt;org.seleniumhq.selenium&lt;/groupId&gt;
+    &lt;artifactId&gt;selenium-java&lt;/artifactId&gt;
+    &lt;version&gt;4.34.0&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+            <p><strong>Step 9 :</strong> Right-click project <strong>Experiment-7a</strong> -&gt; Maven -&gt; Update Project... (or Alt + F5) -&gt; OK</p>
+
+            <h3>Part 3: Selenium Test Code</h3>
+            <p><strong>Step 10 :</strong> Under <code>src/main/java</code>, right-click -&gt; New -&gt; Package -&gt; Name: <code>com.test.selenium</code> -&gt; Finish</p>
+            <p><strong>Step 11 :</strong> Right-click <code>com.test.selenium</code> -&gt; New -&gt; Class -&gt; Name: <code>DynamicDataSubmission</code><br>
+            Check the box: <code>public static void main(String[] args)</code> -&gt; Finish</p>
+            <p><strong>Step 12 :</strong> Paste the following Java code into <code>DynamicDataSubmission.java</code>:</p>
+            <pre>package com.test.selenium;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class DynamicDataSubmission {
+
+    public static void main(String[] args) throws Exception {
+
+        WebDriver driver = new ChromeDriver();
+
+        // Open local HTML page
+        driver.get("file:///C:/SeleniumFiles/StudentForm.html");
+
+        // Dynamic Test Data
+        String[][] data = {
+            {"Ajay", "ajay@gmail.com"},
+            {"Rahul", "rahul@gmail.com"},
+            {"Anita", "anita@gmail.com"}
+        };
+
+        for (int i = 0; i &lt; data.length; i++) {
+
+            WebElement name = driver.findElement(By.id("name"));
+            WebElement email = driver.findElement(By.id("email"));
+
+            name.clear();
+            email.clear();
+
+            name.sendKeys(data[i][0]);
+            email.sendKeys(data[i][1]);
+
+            driver.findElement(By.tagName("button")).click();
+
+            String result = driver.findElement(
+                    By.id("result")
+            ).getText();
+
+            System.out.println("--------------------");
+            System.out.println("Test Case : " + (i + 1));
+            System.out.println("Name : " + data[i][0]);
+            System.out.println("Email : " + data[i][1]);
+            System.out.println(result);
+
+            if (result.equals("Registration Successful")) {
+                System.out.println("TEST PASS");
+            } else {
+                System.out.println("TEST FAIL");
+            }
+
+            Thread.sleep(1000);
+        }
+
+        driver.quit();
+    }
+}</pre>
+            
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('pre').forEach(function(pre) {
